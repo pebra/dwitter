@@ -12,9 +12,7 @@ defdatabase Dwitter.Database do
     end
 
     def replies self do
-      result = Exquisite.match Dweet,
-        where: in_reply_to_id == self.id
-      result.values
+      Dweet.where(in_reply_to_id == self.id).values
     end
   end
 end
