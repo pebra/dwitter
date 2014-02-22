@@ -1,6 +1,7 @@
 Code.require_file "../test_helper.exs", __ENV__.file
 
 use Amnesia
+require Exquisite
 
 defdatabase Dwitter.Database do
   deftable Dweet, [:id, :content, :in_reply_to_id], type: :ordered_set do
@@ -11,7 +12,9 @@ defdatabase Dwitter.Database do
     end
 
     def replies self do
-      Dweet.where(in_reply_to_id == self.id).values
+      result = Exquisite.match Dweet,
+        where: in_reply_to_id == self.id
+      result.values
     end
   end
 end
@@ -38,8 +41,8 @@ defmodule AmnesiaTest do
     end
 
     Amnesia.transaction! do
-      assert "some content" == Dweet.read!(2).in_reply_to.content
-      [reply] = Dweet.read!(1).replies
+      assert "some content" == Dweet.read(2).in_reply_to.content
+      [reply] = Dweet.read(1).replies
       assert "tell me more content" == reply.content
     end
   end
@@ -58,7 +61,7 @@ defmodule AmnesiaTest do
     :ok
   end
 
-  def teardown do
+  teardown do
     Dwitter.Database.destroy
 
     :ok
